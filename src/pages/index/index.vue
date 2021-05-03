@@ -1,7 +1,7 @@
 <template>
 	<view class="body">
 		<view class="top">
-			<view class="top-address" size="mini">
+			<view class="top-address" size="mini" @click="selectRreion">
 				{{address}}
 			</view>
 			<view class="top-search">
@@ -36,14 +36,16 @@
 		</view>
 		<view class="recommended">
 			<view class="recommended-title">
-				<p>每日推荐</p>
-				<view class="recommended-title-screening">
+				<view class="recommended-title-1">每日推荐</view>
+				<view class="recommended-title-screening"
+				:class="{'recommended-title-screeningtrue': recommendedTitle.page4}"
+				>
 					<view 
 					@click="recommendedChage('page1')"
 					class="recommended-title-screening-1"
 					:class="{'recommended-title-screening-1-1': recommendedTitle.page1}"
 					>
-						每日推荐<view></view>
+						附近推荐<view></view>
 					</view>
 					<view 
 					@click="recommendedChage('page2')"
@@ -75,18 +77,15 @@
 						{{item.name}}
 					</view>
 					<view class="recommended-body-right-middle">
-						{{item.type}}|{{item.address}}
+						<view class="recommended-body-right-middle-1">
+							{{item.score}}分　　　<span>月售{{item.month}}</span>
+						</view>
+						<view class="recommended-body-right-middle-2">
+							<span>{{item.minutes}}分钟</span><span>{{item.meter}}m</span>
+						</view>
 					</view>
-					<view class="recommended-body-right-bottom">
-						<view class="recommended-body-right-bottom-1">
-							<span>￥</span>{{item.price}}
-						</view>
-						<view class="recommended-body-right-bottom-2">
-							<s>￥{{item.originalPrice}}</s>
-						</view>
-						<view class="recommended-body-right-bottom-3">
-							月销{{item.sales}}
-						</view>
+					<view class="recommended-body-right-buttom">
+						起送￥{{item.price}} <span>配送{{item.transport}}</span>
 					</view>
 				</view>
 			</view>
@@ -98,7 +97,7 @@
 	export default {
 		data() {
 			return {
-				address: '地址',
+				address: '',
 				test:"",
 				appMsg:[
 					{
@@ -153,13 +152,15 @@
 				recommendedTitle:{
 					page1:true,
 					page2:false,
-					page3:false
+					page3:false,
+					page4:false
 				},
 				recommendedInData:[]
 			}
 		},
 		onLoad() {
 			let that = this
+			this.address = this.$store.state.indexCity
 			uni.request({
 				url:'http://mock-api.com/9KOMkBgk.mock/recommended',
 				success(res){
@@ -168,6 +169,20 @@
 				fail(res) {
 				}
 			})
+			uni.showModal({
+				title: '请您确认当前位置~',
+				cancelColor: '#888888',
+				cancelText: '暂不',
+				confirmText: '好的',
+				success: (res) => {
+					if(res.confirm) {
+						uni.navigateTo({
+							url: '../selectRegion/selectRegion'
+						})
+					}
+				}
+			})
+			
 		},
 		onReachBottom() {
 			console.log("success buttom")
@@ -187,6 +202,11 @@
 				}
 			})
 		},
+		onShow() {
+			uni.$on("indexCity",(e)=>{
+				this.address = e.city
+			})
+		},
 		methods: {
 			recommendedChage(e){
 				let item = this.recommendedTitle
@@ -196,12 +216,27 @@
 					item.page3 = false
 					item[e] = true
 				}
+			},
+			selectRreion(){
+				uni.navigateTo({
+					url:"../selectRegion/selectRegion"
+				})
 			}
+		},
+		onPageScroll(a){
+			if(a.scrollTop >= 518){
+				this.recommendedTitle.page4 = true 
+			}
+			if(a.scrollTop <= 518){
+				this.recommendedTitle.page4 = false
+			}
+			
 		}
+		
 	}
 </script>
 
-<style lang="scss" >
+<style lang="scss" scoped>
 	.body {
 		.top {
 			padding: 60upx 30upx 0upx 30upx;
@@ -297,17 +332,27 @@
 			}
 		}
 		.recommended{
-			border-top: 20upx solid #f2f2f2;
-			padding: 35rpx;
+			background-color: #f2f2f2 ;
 			.recommended-title{
-				p{
+				.recommended-title-1{	
+					margin-left: 35rpx;
 					font-size: 50upx;
 					font-weight: bold;
+					border-top: 20upx solid #f2f2f2;
+					border-bottom: 20upx solid #f2f2f2;
+				}
+				.recommended-title-screeningtrue{
+					position: fixed;
+					top: 0rpx;
+					right: 0;
+					left: 0;
 				}
 				.recommended-title-screening{
-					height: 80rpx;
+					padding: 30rpx 30rpx 25rpx 30rpx;
+					background-color: #fff;
+					display: flex;
+					justify-content: left;
 					.recommended-title-screening-1{
-						float: left;
 						padding: 15upx 50upx 0 0;
 						view{
 							float: right;
@@ -328,9 +373,10 @@
 						}
 					}
 					.recommended-title-screening-2{
-						float: right;
 						font-weight: bold;
+						flex-basis:280rpx;
 						padding-top: 20rpx;
+						text-align: right;
 						view{
 							float: right;
 							width: 0;
@@ -345,9 +391,12 @@
 				}
 			}
 			.recommended-body{
+				border-top: 20upx solid #f2f2f2;
 				display: flex;
+				border-radius: 30rpx;
+				padding: 20rpx 35rpx;
+				background-color: #fff;
 				justify-content: space-between;
-				margin-bottom: 20rpx;
 				.recommended-body-left{
 					width: 140rpx;
 					height: 140rpx;
@@ -360,27 +409,28 @@
 					width: 500rpx;
 					color: #909090;
 					.recommended-body-right-top{
-						font-size: 30rpx;
+						font-size:35rpx;
 						color: #000000;
 						font-weight: bold;
 					}
 					.recommended-body-right-middle{
-						font-size: 10rpx;
-						margin: 8rpx 0;
-					}
-					.recommended-body-right-bottom{
 						display: flex;
 						align-items:flex-end;
 						justify-content: space-between;
-						.recommended-body-right-bottom-1{
-							font-size: 40rpx;
-							color: red;
-							span{
-								font-size: 15rpx;
-							}
+						font-size:30rpx;
+						margin: 10rpx 0; 
+						color:#fca615 ;
+						span{
+							margin-left:30rpx ;
+							color: #909090;
+							font-size: 25rpx;
 						}
-						.recommended-body-right-bottom-2{
-							width: 190rpx;
+					}
+					.recommended-body-right-buttom{
+						span{
+							margin-left:30rpx ;
+							color: #909090;
+							font-size: 25rpx;
 						}
 					}
 				}
