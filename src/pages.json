@@ -13,8 +13,7 @@
 		    "path" : "pages/my/my",
 		    "style" :                                                                                    
 		    { 
-		        "navigationBarTitleText": "首页",
-		        "enablePullDownRefresh": false
+		       "navigationStyle":"custom"
 		    }
 		    
 		}
@@ -22,8 +21,10 @@
 		    "path" : "pages/order/order",
 		    "style" :                                                                                    
 		    {
-		        "navigationBarTitleText": "我的",
-		        "enablePullDownRefresh": false
+		        "navigationBarTitleText": "订单",
+		        "enablePullDownRefresh": false,
+				"navigationBarBackgroundColor":"#ffffff",
+				"backgroundColor":"#f2f2f2"
 		    }
 		},
 		{

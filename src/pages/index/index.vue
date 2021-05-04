@@ -40,27 +40,15 @@
 				<view class="recommended-title-screening"
 				:class="{'recommended-title-screeningtrue': recommendedTitle.page4}"
 				>
-					<view 
-					@click="recommendedChage('page1')"
-					class="recommended-title-screening-1"
-					:class="{'recommended-title-screening-1-1': recommendedTitle.page1}"
-					>
-						附近推荐<view></view>
+					
+					<view class="recommended-title-screening-1"
+					v-for="(item,index) in recommendedTitleIng"
+					:key='index'
+					:class="{'recommended-title-screening-1-1':index === recommendedTitle.page1}"
+					@click="recommendedChage(index)">
+						{{item}}<view></view>
 					</view>
-					<view 
-					@click="recommendedChage('page2')"
-					class="recommended-title-screening-1"
-					:class="{'recommended-title-screening-1-1':recommendedTitle.page2}"
-					>
-						销量<view></view>
-					</view>
-					<view 
-					@click="recommendedChage('page3')"
-					class="recommended-title-screening-1"
-					:class="{'recommended-title-screening-1-1':recommendedTitle.page3 }"
-					>
-						距离<view></view>
-					</view>
+					
 					<view class="recommended-title-screening-2">
 						筛选<view></view>
 					</view>
@@ -97,7 +85,8 @@
 	export default {
 		data() {
 			return {
-				address: '',
+				recommendedTitleIng:['每日推荐','销量','距离'],
+				address:'',
 				test:"",
 				appMsg:[
 					{
@@ -150,25 +139,15 @@
 					}
 				],
 				recommendedTitle:{
-					page1:true,
-					page2:false,
-					page3:false,
+					page1:0,
 					page4:false
 				},
 				recommendedInData:[]
 			}
 		},
 		onLoad() {
-			let that = this
+			this.getHotel()
 			this.address = this.$store.state.indexCity
-			uni.request({
-				url:'http://mock-api.com/9KOMkBgk.mock/recommended',
-				success(res){
-					that.recommendedInData = res.data
-				},
-				fail(res) {
-				}
-			})
 			uni.showModal({
 				title: '请您确认当前位置~',
 				cancelColor: '#888888',
@@ -191,7 +170,7 @@
 				title:"加载中"
 			})
 			uni.request({
-				url:'http://mock-api.com/9KOMkBgk.mock/recommended',
+				url:'http://mock-api.com/9KOMkBgk.mock/recommended_copy',
 				success(res){
 					that.recommendedInData = that.recommendedInData.concat(res.data)
 					uni.hideLoading()
@@ -208,14 +187,24 @@
 			})
 		},
 		methods: {
+			getHotel(){
+				uni.showLoading({
+					title:'加载中'
+				})
+				let that = this
+				uni.request({
+					url:'http://mock-api.com/9KOMkBgk.mock/recommended_copy',
+					success(res){
+						uni.hideLoading()
+						that.recommendedInData = res.data
+					},
+					fail(res) {
+					}
+				})
+			},
 			recommendedChage(e){
-				let item = this.recommendedTitle
-				if( !item.e === true ){
-					item.page1 = false
-					item.page2 = false
-					item.page3 = false
-					item[e] = true
-				}
+				this.recommendedTitle.page1 = e
+				this.getHotel()
 			},
 			selectRreion(){
 				uni.navigateTo({
@@ -335,11 +324,12 @@
 			background-color: #f2f2f2 ;
 			.recommended-title{
 				.recommended-title-1{	
-					margin-left: 35rpx;
 					font-size: 50upx;
 					font-weight: bold;
+					padding-left: 35rpx;
+					padding-top: 35rpx;
 					border-top: 20upx solid #f2f2f2;
-					border-bottom: 20upx solid #f2f2f2;
+					background-color: #fff;
 				}
 				.recommended-title-screeningtrue{
 					position: fixed;
